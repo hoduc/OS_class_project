@@ -1,0 +1,1 @@
+enum RETURN_STATE{OK = 1, NOT_OK=-1};
