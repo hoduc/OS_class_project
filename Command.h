@@ -253,7 +253,7 @@ class CreatePCB : public Command{
 
 class AllocatePCB : public Command{
 
-}
+};
 
 
 Command *help = new Help();
