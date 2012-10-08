@@ -17,6 +17,15 @@ public:
 		cm.insert(std::make_pair("history", history));
 		cm.insert(std::make_pair("prompt", prompt));
 		cm.insert(std::make_pair("alias", alias));
+		cm.insert(std::make_pair("cp", cp));
+		cm.insert(std::make_pair("dp",dp));
+		cm.insert(std::make_pair("block",block));
+		cm.insert(std::make_pair("ublock",ublock));
+		cm.insert(std::make_pair("resume",resume));
+		cm.insert(std::make_pair("suspend", suspend));
+		cm.insert(std::make_pair("showp",showp));
+		cm.insert(std::make_pair("showa",showa));
+		
 		cmd = src = dest = "";
 		init_alias();
 	}

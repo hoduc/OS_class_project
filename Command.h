@@ -1,4 +1,5 @@
 #include "macro.h"
+#include "PCB.h"
 #include <stack>
 #include <string>
 #include <fstream>
@@ -23,6 +24,18 @@ void init_alias(){
 	al.insert(std::make_pair("history","history"));
 	al.insert(std::make_pair("prompt","prompt"));
 	al.insert(std::make_pair("alias","alias"));
+	al.insert(std::make_pair("cp", "cp"));
+	al.insert(std::make_pair("dp", "dp"));
+	al.insert(std::make_pair("block", "block"));
+	al.insert(std::make_pair("ublock","ublock"));
+	al.insert(std::make_pair("suspend", "suspend"));
+	al.insert(std::make_pair("resume", "resume"));
+	al.insert(std::make_pair("sp", "sp"));
+	al.insert(std::make_pair("showp","showp"));
+	al.insert(std::make_pair("showa", "showa"));
+	al.insert(std::make_pair("showr", "showr"));
+	al.insert(std::make_pair("showb", "showb"));
+
 }
 void commandToStack(const std::string &cmd){
 		//find the command on stack
@@ -249,12 +262,201 @@ public:
 };
 
 class CreatePCB : public Command{
+public:
+	int exe(const std::string &cmd,
+			  const std::string &src,
+			  const std::string &dest){
+		if (src.empty() && dest.empty()){
+			//let user enter information
+			std::string process_name;
+			int priority;
+			int process_type;
+			std::cout << "Enter process name : ";
+			std::cin  >> process_name;
+			std::cout << "Enter priority[-127->128]: ";
+			std::cin >> priority;
+			std::cout << "Enter process type[0-APP, 1-SYS]: ";
+			std::cin  >> process_type;
+			
+			pQUEUE pp = pcb.setUpPCB(process_name, priority, process_type);
+			if (pp!= NULL)
+				pcb.insertPCB(READY, pp);
+		}
+		else std::cout << cmd << "take no parameter" <<std::endl;
+		return OK;
+	}
 };
 
-class AllocatePCB : public Command{
+class DeletePCB : public Command{
+public:
+	int exe(const std::string &cmd,
+			  const std::string &src,
+			  const std::string &dest){
+		if (!src.empty() && dest.empty()){
+			pQUEUE p = pcb.findPCB(src);
+			if (p != NULL){
+				pcb.removePCB(p);
+				pcb.freePCB(p);
+			}
+			else std::cout << "No such process" << std::endl;
 
+		}
+		else std::cout << cmd << "take 1 parameter only" << std::endl;
+		return OK;
+	}
 };
 
+class Block : public Command{
+public:
+	int exe(const std::string &cmd,
+			  const std::string &src,
+			  const std::string &dest){
+		if (!src.empty() && dest.empty()){
+			pQUEUE p = pcb.findPCB(src);
+			if (p != NULL){
+				//if the process is not blocked
+				if (p->_process._state == READY){
+					pcb.removePCB(p);
+					pcb.insertPCB(BLOCKED, p);
+					p->_process._state = BLOCKED;
+				}
+				else std::cout << "Process " << p->_process._name << " is already blocked" << std::endl;
+			}
+			else std::cout << "No such process" << std::endl;
+		}
+		else std::cout << cmd << " take 1 parameter" << std::endl;
+		return OK;
+	}
+};
+
+class UBlock : public Command{
+public:
+	int exe(const std::string &cmd,
+			  const std::string &src,
+			  const std::string &dest){
+		if (!src.empty() && dest.empty()){
+			pQUEUE p = pcb.findPCB(src);
+			if (p != NULL){
+				//if the process is blocked --> unblock
+				if (p->_process._state == BLOCKED){
+					pcb.removePCB(p);
+					pcb.insertPCB(READY, p);
+					p->_process._state = READY;
+				}
+				else std::cout << "Process :" << p->_process._name << "is already unblocked" << std::endl;
+			}
+			else std::cout << "No such process" << std::endl;
+		}
+		else std::cout << cmd << " take 1 parameter" << std::endl;
+		return OK;
+	}	
+};
+
+class Suspend : public Command{
+public:
+	int exe(const std::string &cmd,
+			  const std::string &src,
+			  const std::string &dest){
+		if (!src.empty() && dest.empty()){
+			pQUEUE p = pcb.findPCB(src);
+			if (p != NULL){
+				if (p->_process._state != SUSPENDED){
+					pcb.removePCB(p);
+					pcb.insertPCB(SUSPENDED_READY, p);
+					p->_process._state = SUSPENDED;
+				}
+				else std::cout << "Process :" << p->_process._name << "is already suspended" << std::endl;
+			}
+			else std::cout << "No such process" << std::endl;
+		}
+		else std::cout << cmd << " take 1 parameter" << std::endl;
+		return OK;
+	}	
+};
+
+class Resume : public Command{
+public:
+	int exe(const std::string &cmd,
+			  const std::string &src,
+			  const std::string &dest){
+		if (!src.empty() && dest.empty()){
+			pQUEUE p = pcb.findPCB(src);
+			if (p != NULL){
+				if (p->_process._state == SUSPENDED){
+					pcb.removePCB(p);
+					pcb.insertPCB(READY, p);
+					p->_process._state = READY;
+				}
+				else std::cout << "Process :" << p->_process._name << "is already resumed" << std::endl;
+			}
+			else std::cout << "No such process" << std::endl;
+		}
+		else std::cout << cmd << " take 1 parameter" << std::endl;
+		return OK;
+	}	
+};
+
+class SetPriority : public Command{
+public:
+	int exe(const std::string &cmd,
+			  const std::string &src,
+			  const std::string &dest){
+		if (!src.empty() && !dest.empty()){
+			pQUEUE p = pcb.findPCB(src);
+			if (p != NULL){
+				int pri = atoi(dest.c_str());
+				if (pri >= -127 && pri <= 128){
+					p->_process._priority = pri;
+				}
+				else std::cout << "Priority must be w/in range [-128,127]" << std::endl;
+			}
+
+			else std::cout << "No such process exist" << std::endl;
+			return OK;
+		}
+	}
+};
+
+class ShowPCB : public Command{
+public:
+	int exe(const std::string &cmd,
+			  const std::string &src,
+			  const std::string &dest){
+		if (src.empty() && dest.empty()){
+			std::string name;
+			std::cout << "Enter process name: ";
+			std::cin >> name;
+			pQUEUE p = pcb.findPCB(name);
+			if (p != NULL){
+				std::cout << "Class\t: " << p->_process._class << std::endl;
+				std::cout << "Memory\t: " << p->_process._mem << std::endl;
+				std::cout << "Name\t:" << p->_process._name << std::endl;
+				std::cout << "Priority\t:" << p->_process._priority << std::endl;
+				std::cout << "State\t:" << p->_process._state << std::endl;
+			}
+
+			else std::cout << "No such process exist" << std::endl;
+				
+		}
+		else std::cout << cmd << " take no parameter" << std::endl;
+		std::cin.ignore(INT_MAX,'\n');
+		return OK;
+	}
+};
+
+class ShowAll : public Command{
+public:
+	int exe(const std::string &cmd,
+			  const std::string &src,
+			  const std::string &dest){
+	if (src.empty() && dest.empty()){
+		pcb.printQueue();
+	}
+	else std::cout << cmd << " take no parameter" << std::endl;
+	return OK;
+	}
+
+};
 
 Command *help = new Help();
 Command *version = new Version();
@@ -263,3 +465,12 @@ Command *quit = new Exit();
 Command *history = new History();
 Command *prompt = new Prompt();
 Command *alias = new Alias();
+Command *cp = new CreatePCB();
+Command *dp = new DeletePCB();
+Command *block = new Block();
+Command *ublock = new UBlock();
+Command *suspend = new Suspend();
+Command *resume = new Resume();
+Command *sp = new SetPriority();
+Command *showp = new ShowPCB();
+Command *showa = new ShowAll();

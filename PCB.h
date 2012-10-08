@@ -1,3 +1,4 @@
+#include <string>
 typedef enum {APP, SYS} CLASS;
 //state of a process
 //also to figure out the queue in
@@ -5,7 +6,7 @@ typedef enum{
 	READY, BLOCKED, SUSPENDED_READY, SUSPENDED_BLOCKED,
 RUNNING, SUSPENDED
 }STATE;
-typedef char PRIORITY;
+typedef int PRIORITY;
 
 
 //structure holding a process
@@ -21,11 +22,11 @@ typedef process* pPROCESS;	//pointer to process
 //a queuenode structure 
 typedef struct queueNode{
 	PROCESS _process;
-	struct queue* _prev;
-	struct queue* _next; 
-	queue():_prev(NULL), _next(NULL){}
+	struct queueNode* _prev;
+	struct queueNode* _next; 
+	queueNode():_prev(NULL), _next(NULL){}
 }QNODE;
-typedef struct queue* pQUEUE;	//pointer to queuenode
+typedef struct queueNode* pQUEUE;	//pointer to queuenode
 
 //queuelist class
 typedef class qList{
@@ -38,37 +39,80 @@ public:
 		head = tail = new QNODE;
 	}
 	
-	void enQueue(std::string name, char priority, int cLASS){
+	//adding a process to the queue
+	void enQueue(pQUEUE &aProcess){
 		if (empty()){
-			head->_process._name = name;
-			head->_process._priority = (PRIORITY)priority;
-			head->_process._class = (CLASS)cLASS;
+			head = aProcess;
 			tail = head;
 		}
 		else{
-			pQUEUE temp = new QNODE;
-			temp->_process._name = name;
-			temp->_process._priority = (PRIORITY)priority;
-			temp->_process._class = (CLASS)cLASS;
+			pQUEUE temp = aProcess;
 			temp->_prev = tail;
 			tail->_next = temp;
 			tail = temp;
 		}
 		sz++;
 	}
-
-	void dequeue(){
 	
+	//removing a process from queue
+	pQUEUE dequeue(pQUEUE &aProcess){
+		if (aProcess == head){
+			head = aProcess->_next;
+			//aProcess = NULL;
+		}
+		
+		else if (aProcess == tail){
+			tail = aProcess->_prev;
+			//aProcess = NULL;
+		}
+		
+		else{
+			aProcess->_prev->_next = aProcess->_next;
+			aProcess->_next->_prev = aProcess->_prev;
+		}
+		sz--;
+		return aProcess;
 	}
 	
+	//find a process
+	pQUEUE findProcess(std::string name){
+		if (empty())
+			return NULL;
+		pQUEUE t = head;
+		while (t != tail->_next){
+			if (name == (t->_process._name))
+				return t;
+			t= t->_next;
+		}
+		return NULL;
+	}
+
 	void printQueue(){
 		pQUEUE t = head;
-		int counter = 1;
+		std::cout << sz << std::endl;
+		if (empty()){
+			std::cout << std::endl;
+			return;
+		}
 		while (t != tail->_next){
-			std::cout << counter++ << ":" << std::endl;
-			std::cout << t->_process._name << std::endl;
-			std::cout << (int)(t->_process._priority) << std::endl;
-			std::cout << t->_process._class << std::endl;
+			std::cout << "\"" << t->_process._name << "\"" << "[";
+			switch(t->_process._state){
+				case 	READY:	std::cout << "\"" << "re";
+									break;
+				case BLOCKED:  std::cout << "\"" << "bl";
+									break;
+				case SUSPENDED_READY:	std::cout << "\"" << "sre";
+												break;
+				case SUSPENDED_BLOCKED:	std::cout << "\"" << "sbl";
+												break;
+				case RUNNING:				std::cout << "\"" << "ru";
+												break;
+				case SUSPENDED:			std::cout << "\"" << "su";
+												break;
+			}
+			std::cout << "," << (t->_process._priority) << "]";
+			//std::cout << t->_process._class 
+			std::cout << std::endl;
 			t = t->_next;
 		}
 
@@ -87,25 +131,72 @@ private:
 	int sz;
 public:
 	PCB():sz(4){  
-		qt = new QUEUE[sz];
-	}
-	
-	void allocatePCB(){
-
+		_qt = new QUEUE[sz];
 	}
 
-	void setUpPCB(std::string name, char priority, int CLASS){
-	
+	pQUEUE allocatePCB(){
+		return new QNODE;
 	}
 
-	int findPCB(){
+	pQUEUE setUpPCB(std::string process_name, int priority, int process_type){
+		//test for priority and type
+		if ((priority >= -128 && priority <= 127)
+		&& (process_type >=0 && process_type <= 1)
+		&& (findPCB(process_name)== NULL)){
+			pQUEUE pp = allocatePCB();
+			pp->_process._name = process_name;
+			pp->_process._priority = (PRIORITY)priority;
+			pp->_process._class = (CLASS)process_type;
+			pp->_process._state = READY;
+			pp->_process._mem = 1;
+			return pp;
+		}
+		else{
+			std::cout << "Something wrong!!!" << std::endl;
+			return NULL;
+		}
 	}
 
-	void insertPCB(){
+	pQUEUE findPCB(std::string pName){
+		//iterating through 4 queues
+		//to find the process
+		for (int i = 0; i <  sz; ++i){
+			pQUEUE p = _qt[i].findProcess(pName);
+			if (p != NULL)
+				return p;
+		}
+		return NULL;
 	}
 
-	void removePCB(){
+	void insertPCB(int queue, pQUEUE &pi){
+		_qt[(STATE)queue].enQueue(pi);
 	}
+
+	pQUEUE removePCB(pQUEUE &p){
+		return _qt[(STATE)p->_process._state].dequeue(p);
+	}
+
+	void freePCB(pQUEUE &p){
+		delete p;
+	}
+
+	void printQueue(){
+		for (int i = 0; i < sz; ++i){
+			switch(STATE(i)){
+				case READY		: std::cout << "Ready Queue : ";
+									  break;
+				case SUSPENDED_READY	: std::cout << "Suspended_Ready Queue : ";
+											  break;
+				case BLOCKED	: std::cout << "Blocked Queue : ";
+									  break;
+				case SUSPENDED_BLOCKED : std::cout << "Suspended_Blocked Queue : ";
+												 break;
+				
+			}
+			_qt[i].printQueue();
+		}
+	}
+
 
 };
 
