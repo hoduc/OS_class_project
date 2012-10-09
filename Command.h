@@ -362,8 +362,16 @@ public:
 			if (p != NULL){
 				if (p->_process._state != SUSPENDED){
 					pcb.removePCB(p);
-					pcb.insertPCB(SUSPENDED_READY, p);
-					p->_process._state = SUSPENDED;
+					//Suspend the ready process
+					if (p->_process._state == READY){
+						pcb.insertPCB(SUSPENDED_READY, p);
+						p->_process._state = SUSPENDED_READY;
+					}
+					//Suspend the blocked process
+					else if (p->_process._state == BLOCKED){
+						pcb.insertPCB(SUSPENDED_BLOCKED, p);
+						p->_process._state = SUSPENDED_BLOCKED;	
+					}
 				}
 				else std::cout << "Process :" << p->_process._name << "is already suspended" << std::endl;
 			}

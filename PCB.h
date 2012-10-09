@@ -1,13 +1,5 @@
 #include <string>
-typedef enum {APP, SYS} CLASS;
-//state of a process
-//also to figure out the queue in
-typedef enum{
-	READY, BLOCKED, SUSPENDED_READY, SUSPENDED_BLOCKED,
-RUNNING, SUSPENDED
-}STATE;
-typedef int PRIORITY;
-
+#include "macro.h"
 
 //structure holding a process
 typedef struct process{
