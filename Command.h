@@ -4,17 +4,9 @@
 #include <string>
 #include <fstream>
 #include <map>
-//cross-platform code
-#if defined (__WIN32__) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
-#include "windows.h"
-#define OS_WIN
-#else
-#include "sys/unistd.h"
-#endif
 
-
-static std::stack<std::string> uc;		//used command
-static std::map<std::string,std::string> al;	//alias list
+std::stack<std::string> uc;		//used command
+std::map<std::string,std::string> al;	//alias list
 
 void init_alias(){
 	al.insert(std::make_pair("help","help"));
@@ -133,7 +125,7 @@ public:
 
 					ddoc.open("date.txt", std::ios::in);
 					getline(ddoc,date);
-					std::cout << date;
+					std::cout << date << std::endl;
 					ddoc.close();
 				#endif
 			}
@@ -230,7 +222,8 @@ public:
 		}
 		
 		else std::cout << cmd << " only take one parameter" << std::endl;
-
+		
+		commandToStack(cmd);
 		return OK;
 	}
 };
@@ -257,6 +250,7 @@ public:
 		}
 		
 		else std::cout << cmd << "take 2 parameters" << std::endl;
+		commandToStack(cmd);
 		return OK;
 	}
 };
@@ -283,6 +277,9 @@ public:
 				pcb.insertPCB(READY, pp);
 		}
 		else std::cout << cmd << "take no parameter" <<std::endl;
+		commandToStack(cmd);
+		std::cin.clear();
+		std::cin.ignore();
 		return OK;
 	}
 };
@@ -302,6 +299,7 @@ public:
 
 		}
 		else std::cout << cmd << "take 1 parameter only" << std::endl;
+		commandToStack(cmd);
 		return OK;
 	}
 };
@@ -325,6 +323,7 @@ public:
 			else std::cout << "No such process" << std::endl;
 		}
 		else std::cout << cmd << " take 1 parameter" << std::endl;
+		commandToStack(cmd);
 		return OK;
 	}
 };
@@ -348,6 +347,7 @@ public:
 			else std::cout << "No such process" << std::endl;
 		}
 		else std::cout << cmd << " take 1 parameter" << std::endl;
+		commandToStack(cmd);
 		return OK;
 	}	
 };
@@ -378,6 +378,7 @@ public:
 			else std::cout << "No such process" << std::endl;
 		}
 		else std::cout << cmd << " take 1 parameter" << std::endl;
+		commandToStack(cmd);
 		return OK;
 	}	
 };
@@ -390,16 +391,22 @@ public:
 		if (!src.empty() && dest.empty()){
 			pQUEUE p = pcb.findPCB(src);
 			if (p != NULL){
-				if (p->_process._state == SUSPENDED){
+				if (p->_process._state == SUSPENDED_READY){
 					pcb.removePCB(p);
 					pcb.insertPCB(READY, p);
 					p->_process._state = READY;
+				}
+				else if (p->_process._state == SUSPENDED_BLOCKED){
+					pcb.removePCB(p);
+					pcb.insertPCB(BLOCKED, p);
+					p->_process._state = BLOCKED;
 				}
 				else std::cout << "Process :" << p->_process._name << "is already resumed" << std::endl;
 			}
 			else std::cout << "No such process" << std::endl;
 		}
 		else std::cout << cmd << " take 1 parameter" << std::endl;
+		commandToStack(cmd);
 		return OK;
 	}	
 };
@@ -420,8 +427,11 @@ public:
 			}
 
 			else std::cout << "No such process exist" << std::endl;
-			return OK;
+			
 		}
+		else std::cout << cmd << "Take 2 paramteter " << std::endl;
+		commandToStack(cmd);
+		return OK;
 	}
 };
 
@@ -436,18 +446,43 @@ public:
 			std::cin >> name;
 			pQUEUE p = pcb.findPCB(name);
 			if (p != NULL){
-				std::cout << "Class\t: " << p->_process._class << std::endl;
-				std::cout << "Memory\t: " << p->_process._mem << std::endl;
-				std::cout << "Name\t:" << p->_process._name << std::endl;
-				std::cout << "Priority\t:" << p->_process._priority << std::endl;
-				std::cout << "State\t:" << p->_process._state << std::endl;
+				std::cout << "Class:			";
+				switch(p->_process._class){
+					case APP : std::cout << "APP";
+								  break;
+					case SYS : std::cout << "SYS";
+								  break;
+				}
+				std::cout << std::endl;
+				std::cout << "Memory:		\t" << p->_process._mem << std::endl;
+				std::cout << "Name:			" << p->_process._name << std::endl;
+				std::cout << "Priority:		" << p->_process._priority << std::endl;
+				std::cout << "State:			";
+				switch(p->_process._state){
+					case 	READY:	std::cout << "READY";
+										break;
+					case BLOCKED:  std::cout << "BLOCKED";
+										break;
+					case SUSPENDED_READY:	std::cout << "SUSPENDED_READY";
+													break;
+					case SUSPENDED_BLOCKED:	std::cout << "SUSPENDED_BLOCKED";
+													break;
+					case RUNNING:				std::cout << "RUNNING";
+													break;
+					case SUSPENDED:			std::cout << "SUSPENDED";
+													break;
+				}
+				std::cout << std::endl;
 			}
 
 			else std::cout << "No such process exist" << std::endl;
 				
 		}
 		else std::cout << cmd << " take no parameter" << std::endl;
-		std::cin.ignore(INT_MAX,'\n');
+		//std::cin.ignore(INT_MAX,'\n');
+		std::cin.clear();
+		std::cin.ignore();
+		commandToStack(cmd);
 		return OK;
 	}
 };
@@ -457,15 +492,46 @@ public:
 	int exe(const std::string &cmd,
 			  const std::string &src,
 			  const std::string &dest){
-	if (src.empty() && dest.empty()){
-		pcb.printQueue();
-	}
-	else std::cout << cmd << " take no parameter" << std::endl;
-	return OK;
+		
+		if (src.empty() && dest.empty()){
+			pcb.printQueue();
+		}
+		else std::cout << cmd << " take no parameter" << std::endl;
+		commandToStack(cmd);
+		return OK;
 	}
 
 };
 
+class ShowBlocked : public Command{
+public:
+	int exe(const std::string &cmd,
+			  const std::string &src,
+			  const std::string &dest){
+		
+		if (src.empty() && dest.empty()){
+			pcb.printQueue(BLOCKED);
+		}
+		else std::cout << cmd << " take no parameter" << std::endl;
+		commandToStack(cmd);
+		return OK;
+	}
+};
+
+class ShowReady : public Command{
+public:
+	int exe(const std::string &cmd,
+			  const std::string &src,
+			  const std::string &dest){
+		
+		if (src.empty() && dest.empty()){
+			pcb.printQueue(READY);
+		}
+		else std::cout << cmd << " take no parameter" << std::endl;
+		commandToStack(cmd);
+		return OK;
+	}
+};
 Command *help = new Help();
 Command *version = new Version();
 Command *date = new Date();
@@ -482,3 +548,5 @@ Command *resume = new Resume();
 Command *sp = new SetPriority();
 Command *showp = new ShowPCB();
 Command *showa = new ShowAll();
+Command *showb = new ShowBlocked();
+Command *showr = new ShowReady();

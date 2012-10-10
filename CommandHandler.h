@@ -23,8 +23,11 @@ public:
 		cm.insert(std::make_pair("ublock",ublock));
 		cm.insert(std::make_pair("resume",resume));
 		cm.insert(std::make_pair("suspend", suspend));
+		cm.insert(std::make_pair("sp", sp));
 		cm.insert(std::make_pair("showp",showp));
 		cm.insert(std::make_pair("showa",showa));
+		cm.insert(std::make_pair("showb",showb));
+		cm.insert(std::make_pair("showr",showr));
 		
 		cmd = src = dest = "";
 		init_alias();

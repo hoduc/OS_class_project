@@ -5,11 +5,10 @@ int main(){
 	std::string cmd;
 	ch.showWelcome();
 	ch.showPrompt();
-	getline(std::cin,cmd,'\n');
+	std::getline(std::cin,cmd);
 	while(ch.execute(cmd) > 0){
 		ch.showPrompt();
-		std::cin.ignore();					//Flush the inputstream
-		getline(std::cin,cmd,'\n');
+		std::getline(std::cin,cmd);
 	}
 	return 0;	
 }

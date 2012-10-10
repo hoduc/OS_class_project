@@ -109,10 +109,42 @@ public:
 		}
 
 	}
+	
+	//print queue by state
+	void printQueue(STATE _st){
+		pQUEUE t = head;
+		std::cout << sz << std::endl;
+		if (empty()){
+			std::cout << std::endl;
+			return;
+		}
+		while (t != tail->_next){
+			std::cout << "\"" << t->_process._name << "\"" << "[";
+			switch(t->_process._state){
+				case 	READY:	std::cout << "\"" << "re";
+									break;
+				case BLOCKED:  std::cout << "\"" << "bl";
+									break;
+				case SUSPENDED_READY:	std::cout << "\"" << "sre";
+												break;
+				case SUSPENDED_BLOCKED:	std::cout << "\"" << "sbl";
+												break;
+				case RUNNING:				std::cout << "\"" << "ru";
+												break;
+				case SUSPENDED:			std::cout << "\"" << "su";
+												break;
+			}
+			std::cout << "," << (t->_process._priority) << "]";
+			//std::cout << t->_process._class 
+			std::cout << std::endl;
+			t = t->_next;
+		}
+	}
 
 	bool empty(){
 		return sz == 0;
 	}
+
 }QUEUE;
 typedef qList* QT;
 
@@ -144,7 +176,19 @@ public:
 			return pp;
 		}
 		else{
-			std::cout << "Something wrong!!!" << std::endl;
+			std::cout << "WARNING:" <<std::endl;
+			if (priority < -128 || priority > 127){
+				std::cout << "*Priority w/in range [-128,127]" << std::endl;
+			}
+
+			if (process_type < 0 || process_type > 1){
+				std::cout << "**Process type can only be APP[0] or SYS[1]" << std::endl;
+			}
+			
+			if (findPCB(process_name)){
+				std::cout << "***Process" << "\"" << process_name << "\"" << "already existed" << std::endl;
+			}
+			std::cout << "PCB created failed!!!" << std::endl;
 			return NULL;
 		}
 	}
@@ -187,6 +231,21 @@ public:
 			}
 			_qt[i].printQueue();
 		}
+	}
+
+	void printQueue(STATE _st){
+		switch(STATE(_st)){
+			case READY		: std::cout << "Ready Queue : ";
+								  break;
+			case SUSPENDED_READY	: std::cout << "Suspended_Ready Queue : ";
+										  break;
+			case BLOCKED	: std::cout << "Blocked Queue : ";
+								  break;
+			case SUSPENDED_BLOCKED : std::cout << "Suspended_Blocked Queue : ";
+											break;
+				
+		}
+		_qt[_st].printQueue(_st);
 	}
 
 
