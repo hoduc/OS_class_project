@@ -89,21 +89,28 @@ public:
 		while (t != tail->_next){
 			std::cout << "\"" << t->_process._name << "\"" << "[";
 			switch(t->_process._state){
-				case 	READY:	std::cout << "\"" << "re";
+				case 	READY:	std::cout << "\"" << "re" << "\"";
 									break;
-				case BLOCKED:  std::cout << "\"" << "bl";
+				case BLOCKED:  std::cout << "\"" << "bl" << "\"";
 									break;
-				case SUSPENDED_READY:	std::cout << "\"" << "sre";
+				case SUSPENDED_READY:	std::cout << "\"" << "sre" << "\"";
 												break;
-				case SUSPENDED_BLOCKED:	std::cout << "\"" << "sbl";
+				case SUSPENDED_BLOCKED:	std::cout << "\"" << "sbl" << "\"";
 												break;
-				case RUNNING:				std::cout << "\"" << "ru";
+				case RUNNING:				std::cout << "\"" << "ru" << "\"";
 												break;
-				case SUSPENDED:			std::cout << "\"" << "su";
+				case SUSPENDED:			std::cout << "\"" << "su" << "\"";
 												break;
 			}
-			std::cout << "," << (t->_process._priority) << "]";
-			//std::cout << t->_process._class 
+			std::cout << "," << (t->_process._priority);
+			std::cout << ",";
+			switch(t->_process._class){
+				case APP : std::cout << "APP";
+							  break;
+				case SYS : std::cout << "SYS";
+							  break;
+			}
+			std::cout << "," << t->_process._mem << "]";
 			std::cout << std::endl;
 			t = t->_next;
 		}
@@ -121,21 +128,28 @@ public:
 		while (t != tail->_next){
 			std::cout << "\"" << t->_process._name << "\"" << "[";
 			switch(t->_process._state){
-				case 	READY:	std::cout << "\"" << "re";
+				case 	READY:	std::cout << "\"" << "re" << "\"";
 									break;
-				case BLOCKED:  std::cout << "\"" << "bl";
+				case BLOCKED:  std::cout << "\"" << "bl" << "\"";
 									break;
-				case SUSPENDED_READY:	std::cout << "\"" << "sre";
+				case SUSPENDED_READY:	std::cout << "\"" << "sre" << "\"";
 												break;
-				case SUSPENDED_BLOCKED:	std::cout << "\"" << "sbl";
+				case SUSPENDED_BLOCKED:	std::cout << "\"" << "sbl" << "\"";
 												break;
-				case RUNNING:				std::cout << "\"" << "ru";
+				case RUNNING:				std::cout << "\"" << "ru" << "\"";
 												break;
-				case SUSPENDED:			std::cout << "\"" << "su";
+				case SUSPENDED:			std::cout << "\"" << "su" << "\"";
 												break;
 			}
-			std::cout << "," << (t->_process._priority) << "]";
-			//std::cout << t->_process._class 
+			std::cout << "," << (t->_process._priority);
+			std::cout << ",";
+			switch(t->_process._class){
+				case APP : std::cout << "APP";
+							  break;
+				case SYS : std::cout << "SYS";
+							  break;
+			}
+			std::cout << "," << t->_process._mem << "]";
 			std::cout << std::endl;
 			t = t->_next;
 		}
