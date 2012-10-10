@@ -1,0 +1,52 @@
+help			-Show this document.
+			-Usage : help [].
+
+version			-Show version number.
+			-Usage : version [].
+
+date			-Set/show date
+			-Usage : date date(separate by '-')
+				 date [] : show date
+exit			-Exit.
+
+history			-Show list of used commands.
+			-Usage : history []
+
+batch			-Do multiple command from files.
+			-Usage : batch file
+
+prompt			-Customize the prompt
+			-Usage : prompt newprompt
+
+alias			-Mask the commands.
+			-Usage : alias command mask.
+
+cp			-Create a process.
+			-Usage : cp []
+
+dp			-Delete a process.
+			-Usage : dp process_name.
+
+block			-Block a process.
+			-Usage : block process_name.
+
+ublock			-Unblock a process.
+			-Usage : unblock process_name.
+
+suspend			-Suspend a process.
+			-Usage : suspend process_name.
+
+sp			-Set priority of a process.
+			-Usage : sp [].
+
+showp			-Show information of a process.
+			-Usage : showp [].
+
+showa			-Show information of all processes.
+			-Usage : showa [].
+
+showr			-Show information of READY processes.
+			-Usage : showr [].
+
+showb			-Show information of BLOCKED processes.
+			-Usage : showb [].
