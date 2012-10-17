@@ -16,6 +16,7 @@ void init_alias(){
 	al.insert(std::make_pair("history","history"));
 	al.insert(std::make_pair("prompt","prompt"));
 	al.insert(std::make_pair("alias","alias"));
+	al.insert(std::make_pair("batch","batch"));
 	al.insert(std::make_pair("cp", "cp"));
 	al.insert(std::make_pair("dp", "dp"));
 	al.insert(std::make_pair("block", "block"));
@@ -250,6 +251,33 @@ public:
 		}
 		
 		else std::cout << cmd << "take 2 parameters" << std::endl;
+		commandToStack(cmd);
+		return OK;
+	}
+};
+
+class Batch : public Command{
+public:
+	int exe(const std::string &cmd,
+			  const std::string &src,
+			  const std::string &dest){
+		if (!src.empty() && dest.empty()){
+			fstream b;
+			b.open(src,std::ios::in);
+			if (!b){
+				std::cout << "No file exists" << std::endl;
+			}
+			else{
+				std::string cmd;
+				std::getline(b,cmd);
+				while (ch.execute(cmd) > 0){
+					std::getline(b,cmd);
+				}
+
+			}
+		}
+
+		else std::cout << cmd << "take 1 parameter" << std::endl;
 		commandToStack(cmd);
 		return OK;
 	}
@@ -539,6 +567,7 @@ Command *quit = new Exit();
 Command *history = new History();
 Command *prompt = new Prompt();
 Command *alias = new Alias();
+Command *batch = new Batch();
 Command *cp = new CreatePCB();
 Command *dp = new DeletePCB();
 Command *block = new Block();

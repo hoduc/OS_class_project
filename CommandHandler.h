@@ -17,6 +17,7 @@ public:
 		cm.insert(std::make_pair("history", history));
 		cm.insert(std::make_pair("prompt", prompt));
 		cm.insert(std::make_pair("alias", alias));
+		cm.insert(std::make_pair("batch", batch));
 		cm.insert(std::make_pair("cp", cp));
 		cm.insert(std::make_pair("dp",dp));
 		cm.insert(std::make_pair("block",block));
